@@ -32,11 +32,11 @@ public class UserManageUtil {
 
     /**
      * 批量获取用户基本信息（最多支持一次拉取100条）
-     * @param accessToken
      * @param data map格式类型: {"openid": "otvxTs4dckWG7imySrJd6jSi0CWE","lang": "zh_CN"}
+     * @param accessToken
      * @return
      */
-    public static String getBatchUserInfo(String accessToken, List<Map<String, String>> data) {
+    public static String getBatchUserInfo(List<Map<String, String>> data, String accessToken) {
         String url = "https://api.weixin.qq.com/cgi-bin/user/info/batchget?access_token=" + accessToken;
         Map<String, Object> params = new HashMap<>();
         params.put("user_list", data);
@@ -55,7 +55,7 @@ public class UserManageUtil {
      * 一次拉取调用最多拉取10000个关注者的OpenID，可以通过多次拉取的方式来满足需求。
      * @param nextOpenId 第一个拉取的OPENID，不填默认从头开始拉取
      * @param accessToken 调用接口凭证
-     * @return 成功返回: {"total":2,"count":2,"data":{"openid":["OPENID1","OPENID2"]},"next_openid":"NEXT_OPENID"}
+     * @return 成功返回: {"total":2,"count":2,"data":{"openid":["oPiZ20-ZfrT5nncexmB3vj_ErRMY","oPiZ2009qZo8imODDtUm9i6LEfm0"]},"next_openid":"oPiZ2009qZo8imODDtUm9i6LEfm0"}
      */
     public static String getSubscribeOpenId(String nextOpenId, String accessToken) {
         String url;
@@ -73,21 +73,19 @@ public class UserManageUtil {
      * 该接口每次调用最多可拉取 10000 个OpenID，当列表数较多时，可以通过多次拉取的方式来满足需求。
      * @param beginOpenId 当 begin_openid 为空时，默认从开头拉取
      * @param accessToken
-     * @return
+     * @return 成功返回: {"total":2,"count":2,"data":{"openid":["oPiZ20-ZfrT5nncexmB3vj_ErRMY","oPiZ2009qZo8imODDtUm9i6LEfm0"]},"next_openid":"oPiZ2009qZo8imODDtUm9i6LEfm0"}
      */
     public static String getBlackList(String beginOpenId, String accessToken) {
         String url = "https://api.weixin.qq.com/cgi-bin/tags/members/getblacklist?access_token=" + accessToken;
-        String p = null;
-        if (StringUtils.isNotBlank(beginOpenId)) {
-            Map<String, Object> params = new HashMap<>();
-            params.put("begin_openid", beginOpenId);
-            try {
-                p = objectMapper.writeValueAsString(params);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        Map<String, Object> params = new HashMap<>();
+        params.put("begin_openid", beginOpenId);
+        try {
+            String p = objectMapper.writeValueAsString(params);
+            return HttpUtil.httpsRequest(url, "POST", p);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return HttpUtil.httpsRequest(url, "POST", p);
+        return null;
     }
 
 
@@ -160,12 +158,14 @@ public class UserManageUtil {
      * 一个公众号，最多可以创建100个标签。
      * @param name 	标签名（30个字符以内）
      * @param accessToken 调用接口凭据
-     * @return 成功返回: {"tag":{ "id":134,//标签id "name":"广东" }}
+     * @return 成功返回: {"tag":{"id":100,"name":"北京"}}
      */
     public static String createTag(String name, String accessToken) {
         String url = "https://api.weixin.qq.com/cgi-bin/tags/create?access_token=" + accessToken;
         Map<String, Object> params = new HashMap<>();
-        params.put("tag", new HashMap<>().put("name", name));
+        Map<String, Object> tmp = new HashMap<>();
+        tmp.put("name", name);
+        params.put("tag", tmp);
         try {
             String p = objectMapper.writeValueAsString(params);
             return HttpUtil.httpsRequest(url, "POST", p);
@@ -179,7 +179,7 @@ public class UserManageUtil {
     /**
      * 获取公众号已创建的标签
      * @param accessToken
-     * @return 成功返回: {"tags": [{"id": 1,"name": "每天一罐可乐星人","count": 0//此标签下粉丝数},{"id": 2,"name": "星标组","count": 0}]}
+     * @return 成功返回: {"tags":[{"id":2,"name":"星标组","count":0},{"id":100,"name":"北京","count":0}]}
      */
     public static String getTagList(String accessToken) {
         String url = "https://api.weixin.qq.com/cgi-bin/tags/get?access_token=" + accessToken;
@@ -218,10 +218,12 @@ public class UserManageUtil {
      * @param accessToken
      * @return 成功返回: {"errcode":0,"errmsg":"ok"}
      */
-    public static String deleteTag(String tagId, String accessToken) {
+    public static String deleteTag(int tagId, String accessToken) {
         String url = "https://api.weixin.qq.com/cgi-bin/tags/delete?access_token=" + accessToken;
         Map<String, Object> params = new HashMap<>();
-        params.put("id", tagId);
+        Map<String, Object> tmp = new HashMap<>();
+        tmp.put("id", tagId);
+        params.put("tag", tmp);
         try {
             String p = objectMapper.writeValueAsString(params);
             return HttpUtil.httpsRequest(url, "POST", p);
@@ -237,7 +239,7 @@ public class UserManageUtil {
      * @param tagId 标签ID
      * @param nextOpenId 拉取列表最后一个用户的openid
      * @param accessToken
-     * @return
+     * @return 成功返回: {"count":2,"data":{"openid":["oPiZ20-ZfrT5nncexmB3vj_ErRMY","oPiZ2009qZo8imODDtUm9i6LEfm0"]},"next_openid":"oPiZ2009qZo8imODDtUm9i6LEfm0"}
      */
     public static String getTagOpenIdList(int tagId, String nextOpenId, String accessToken) {
         String url = "https://api.weixin.qq.com/cgi-bin/user/tag/get?access_token=" + accessToken;
@@ -302,7 +304,7 @@ public class UserManageUtil {
      * 获取用户身上的标签列表
      * @param openId 用户openId
      * @param accessToken
-     * @return 成功返回: {"tagid_list":[134, 2//被置上的标签列表]}
+     * @return 成功返回: {"tagid_list":[100]}
      */
     public static String getUserTagList(String openId, String accessToken) {
         String url = "https://api.weixin.qq.com/cgi-bin/tags/getidlist?access_token=" + accessToken;
