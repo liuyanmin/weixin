@@ -59,6 +59,19 @@ public class UserManageUtilTest {
     }
 
     /**
+     * 获取所有关注用户列表接口测试
+     */
+    @Test
+    public void testGetAllSubscribeOpenId() {
+        List<String> openIds = UserManageUtil.getAllSubscribeOpenId(accessToken);
+        if (openIds != null) {
+            System.out.println("获取到openId 总数: " + openIds.size());
+        } else {
+            System.out.println("获取到openId 总数: 0");
+        }
+    }
+
+    /**
      * 获取公众号黑名单接口测试
      */
     @Test

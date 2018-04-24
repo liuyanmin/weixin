@@ -31,12 +31,16 @@ public class AccountManageUtil {
         if (scene instanceof Integer) {
             params.put("action_name", "QR_LIMIT_SCENE");
             Map<String, Object> tmp = new HashMap<>();
-            tmp.put("scene", new HashMap<>().put("scene_id", (Integer) scene));
+            Map<String, Object> sceneMap = new HashMap<>();
+            sceneMap.put("scene_id", scene);
+            tmp.put("scene", sceneMap);
             params.put("action_info", tmp);
         } else {
             params.put("action_name", "QR_LIMIT_STR_SCENE");
             Map<String, Object> tmp = new HashMap<>();
-            tmp.put("scene", new HashMap<>().put("scene_str", scene.toString()));
+            Map<String, Object> sceneMap = new HashMap<>();
+            sceneMap.put("scene_str", scene.toString());
+            tmp.put("scene", sceneMap);
             params.put("action_info", tmp);
         }
         try {
@@ -97,7 +101,7 @@ public class AccountManageUtil {
      * 长链接转短链接
      * @param longUrl 长连接
      * @param accessToken 调用接口凭证
-     * @return 成功返回: {"errcode":0,"errmsg":"ok","short_url":"http:\/\/w.url.cn\/s\/AvCo6Ih"}
+     * @return 成功返回: {"errcode":0,"errmsg":"ok","short_url":"https:\/\/w.url.cn\/s\/AOQgT00"}
      */
     public static String long2shortLink(String longUrl, String accessToken) {
         String url = "https://api.weixin.qq.com/cgi-bin/shorturl?access_token=" + accessToken;
