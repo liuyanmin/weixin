@@ -1,11 +1,13 @@
 package com.lym.utils.wx;
 
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lym.utils.HttpUtil;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,8 +53,9 @@ public class UserManageUtil {
 
 
     /**
-     * 获取用户列表
+     * 分批获取用户列表
      * 一次拉取调用最多拉取10000个关注者的OpenID，可以通过多次拉取的方式来满足需求。
+     * 注意: 拉取到最后一次的时候next_openid也是有值的，但count=0
      * @param nextOpenId 第一个拉取的OPENID，不填默认从头开始拉取
      * @param accessToken 调用接口凭证
      * @return 成功返回: {"total":2,"count":2,"data":{"openid":["oPiZ20-ZfrT5nncexmB3vj_ErRMY","oPiZ2009qZo8imODDtUm9i6LEfm0"]},"next_openid":"oPiZ2009qZo8imODDtUm9i6LEfm0"}
@@ -65,6 +68,49 @@ public class UserManageUtil {
             url = "https://api.weixin.qq.com/cgi-bin/user/get?access_token=" + accessToken;
         }
         return HttpUtil.httpsRequest(url, "GET", null);
+    }
+
+
+    /**
+     * 获取所有的用户列表
+     * @param accessToken 调用接口凭证
+     * @return 返回关注用户openId 列表
+     */
+    public static List<String> getAllSubscribeOpenId(String accessToken) {
+        List<String> returnList = new ArrayList<>();
+
+        // 关注总用户数
+        int totalCount;
+
+        // 每次获取的用户数
+        int count;
+
+        String nextOpenId = "";
+        String url;
+
+        do {
+            if (StringUtils.isNotBlank(nextOpenId)) {
+                url = "https://api.weixin.qq.com/cgi-bin/user/get?access_token=" + accessToken + "&next_openid=" + nextOpenId;
+            } else {
+                url = "https://api.weixin.qq.com/cgi-bin/user/get?access_token=" + accessToken;
+            }
+            String result = HttpUtil.httpsRequest(url, "GET", null);
+            JSONObject json = JSONObject.parseObject(result);
+
+            totalCount = json.getInteger("total");
+            count = json.getIntValue("count");
+
+            if (count > 0) {
+                JSONObject data = json.getJSONObject("data");
+                List<String> openIds = data.getObject("openid", new TypeReference<List<String>>() {
+                });
+                if (openIds != null && openIds.size() > 0) {
+                    returnList.addAll(openIds);
+                }
+                nextOpenId = json.get("next_openid").toString();
+            }
+        } while (returnList.size() < totalCount);
+        return returnList;
     }
 
 

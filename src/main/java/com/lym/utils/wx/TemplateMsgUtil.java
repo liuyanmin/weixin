@@ -48,7 +48,7 @@ public class TemplateMsgUtil {
             String p = objectMapper.writeValueAsString(params);
             return HttpUtil.httpsRequest(url, "POST", p);
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
         return null;
     }
