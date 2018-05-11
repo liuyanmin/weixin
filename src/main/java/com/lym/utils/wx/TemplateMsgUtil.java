@@ -35,10 +35,44 @@ public class TemplateMsgUtil {
 
 
     /**
+     * 设置所属行业
+     * 每个公众号需要设置两个行业，每月可以更改一次
+     * @param industryId1 	公众号模板消息所属行业编号
+     * @param industryId2 	公众号模板消息所属行业编号
+     * @param accessToken 接口调用凭证
+     * @return
+     */
+    public static String setIndustry(String industryId1, String industryId2, String accessToken) {
+        String url = "https://api.weixin.qq.com/cgi-bin/template/api_set_industry?access_token=" + accessToken;
+        Map<String, Object> params = new HashMap<>();
+        params.put("industry_id1", industryId1);
+        params.put("industry_id2", industryId2);
+        try {
+            String p = objectMapper.writeValueAsString(params);
+            return HttpUtil.httpsRequest(url, "POST", p);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    /**
+     * 获取设置的行业信息
+     * @param accessToken
+     * @return 成功返回: {"primary_industry":{"first_class":"教育","second_class":"培训"},"secondary_industry":{"first_class":"教育","second_class":"院校"}}
+     */
+    public static String getIndustry(String accessToken) {
+        String url = "https://api.weixin.qq.com/cgi-bin/template/get_industry?access_token=" + accessToken;
+        return HttpUtil.httpsRequest(url, "GET", null);
+    }
+
+
+    /**
      * 获得模板ID
      * @param templateIdShort 模板库中模板的编号，有“TM**”和“OPENTM**”等形式
      * @param accessToken 	接口调用凭证
-     * @return 成功返回: {"errcode":0,"errmsg":"ok","template_id":"Doclyl5uP7Aciu-qZ7mJNPtWkbkYnWBWVja26EGbNyk"}
+     * @return 成功返回: {"errcode":0,"errmsg":"ok","template_id":"_dtFJlnzcyI6hbq0_gaIGl6ak5WDh6hbTo2YYAFXxMg"}
      */
     public static String getTemplateId(String templateIdShort, String accessToken) {
         String url = "https://api.weixin.qq.com/cgi-bin/template/api_add_template?access_token=" + accessToken;
@@ -57,7 +91,7 @@ public class TemplateMsgUtil {
     /**
      * 获取模板列表
      * @param accessToken
-     * @return
+     * @return 成功返回: {"template_list":[{"template_id":"_dtFJlnzcyI6hbq0_gaIGl6ak5WDh6hbTo2YYAFXxMg","title":"工资发放通知","primary_industry":"教育","deputy_industry":"培训","content":"{{first.DATA}}\n上月应发工资：{{keyword1.DATA}}\n扣缴社会保险：{{keyword2.DATA}}\n个人所得税：{{keyword3.DATA}}\n实发工资：{{keyword4.DATA}}\n公司承担社会保险：{{keyword5.DATA}}\n{{remark.DATA}}","example":"向您工资卡发放\r\n上月应发工资：12000.00￥\r\n扣缴社会保险：1000.00￥\r\n个人所得税：200.00￥\r\n实发工资：10800.00￥\r\n公司承担社会保险：3200.00￥\r\n详细工资明细请登录公司人事系统查询。"}]}
      */
     public static String getTemplateInfoList(String accessToken) {
         String url = "https://api.weixin.qq.com/cgi-bin/template/get_all_private_template?access_token=" + accessToken;
